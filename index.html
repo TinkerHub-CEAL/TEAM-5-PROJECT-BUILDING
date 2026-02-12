@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Crowd Monitoring System</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            background: #0f172a;
+            color: white;
+        }
+
+        .sidebar {
+            width: 230px;
+            background: #1e293b;
+            padding: 20px;
+            height: 100vh;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #cbd5e1;
+            text-decoration: none;
+            margin: 15px 0;
+            cursor: pointer;
+        }
+
+        .sidebar a:hover {
+            color: white;
+        }
+
+        .main {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .low { background: green; }
+        .medium { background: orange; }
+        .high { background: red; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 8px;
+            border-bottom: 1px solid #334155;
+        }
+
+        #loginPage {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-box {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        input, button {
+            padding: 8px;
+            margin: 8px 0;
+            width: 200px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="loginPage">
+    <div class="login-box">
+        <h2>Smart Crowd Monitoring</h2>
+        <input type="text" placeholder="Username">
+        <input type="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+</div>
+
+<div class="sidebar">
+    <h2>SCMS</h2>
+    <a>Dashboard</a>
+    <a>Live Monitoring</a>
+    <a>Video Upload</a>
+    <a>Alerts</a>
+    <a>Reports</a>
+</div>
+
+<div class="main">
+    <h1>Dashboard Overview</h1>
+
+    <div class="card">Total Cameras: 4</div>
+    <div class="card" id="highZones">High Crowd Zones: 0</div>
+    <div class="card">System Status: Running</div>
+    <div class="card">Last Updated: <span id="lastUpdated"></span></div>
+
+    <h2>Live Camera Monitoring</h2>
+    <div class="grid" id="cameraGrid"></div>
+
+    <h2>Upload New Video Feed</h2>
+    <input type="file" id="videoUpload" accept="video/*">
+    <video id="uploadedVideo" controls></video>
+
+    <h2>Alert Logs</h2>
+    <div id="alertBox"></div>
+
+    <h2>Reports</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Location</th>
+                <th>Density %</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="reportTable"></tbody>
+    </table>
+</div>
+
+<script>
+
+function login() {
+    document.getElementById("loginPage").style.display = "none";
+}
+
+const locations = ["Railway Station", "City Mall", "Bus Stand", "Temple Area"];
+let alertCount = 0;
+
+function updateSystem() {
+
+    const grid = document.getElementById("cameraGrid");
+    const alertBox = document.getElementById("alertBox");
+    const reportTable = document.getElementById("reportTable");
+
+    grid.innerHTML = "";
+    let highZones = 0;
+
+    locations.forEach(location => {
+
+        let density = Math.floor(Math.random() * 100);
+        let statusClass, statusText;
+
+        if (density < 40) {
+            statusClass = "low";
+            statusText = "Low";
+        } else if (density < 70) {
+            statusClass = "medium";
+            statusText = "Medium";
+        } else {
+            statusClass = "high";
+            statusText = "High";
+            highZones++;
+            alertCount++;
+
+            const alertMsg = document.createElement("div");
+            alertMsg.className = "card high";
+            alertMsg.innerText = "ALERT: High crowd detected at " + location;
+            alertBox.prepend(alertMsg);
+        }
+
+        const cameraCard = document.createElement("div");
+        cameraCard.className = "card";
+        cameraCard.innerHTML = `
+            <h3>${location}</h3>
+            <video src="https://www.w3schools.com/html/mov_bbb.mp4" autoplay muted loop></video>
+            <div class="status ${statusClass}">${statusText} - ${density}%</div>
+        `;
+
+        grid.appendChild(cameraCard);
+
+        const row = `
+            <tr>
+                <td>${new Date().toLocaleTimeString()}</td>
+                <td>${location}</td>
+                <td>${density}%</td>
+                <td>${statusText}</td>
+            </tr>
+        `;
+
+        reportTable.innerHTML = row + reportTable.innerHTML;
+
+    });
+
+    document.getElementById("highZones").innerText = "High Crowd Zones: " + highZones;
+    document.getElementById("lastUpdated").innerText = new Date().toLocaleTimeString();
+}
+
+setInterval(updateSystem, 5000);
+updateSystem();
+
+document.getElementById("videoUpload").addEventListener("change", function() {
+    const file = this.files[0];
+    const videoURL = URL.createObjectURL(file);
+    document.getElementById("uploadedVideo").src = videoURL;
+});
+
+</script>
+
+</body>
+</html>
