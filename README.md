@@ -65,22 +65,6 @@ Features
 
 🔹 Real-time bounding box visualization
 
- Project Structure
-SCAS/
-│
-├── app.py
-├── requirements.txt
-│
-├── uploads/
-│
-├── static/
-│   ├── style.css
-│   └── siren.wav
-│
-└── templates/
-    └── index.html
-
-
 How It Works
 
 User selects:
